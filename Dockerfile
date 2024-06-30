@@ -1,6 +1,6 @@
 # FROM python:3.9-slim
 # FROM python:3.12-slim
-FROM public.ecr.aws/lambda/python:3.12
+FROM public.ecr.aws/lambda/python:3.11
 
 # Copy requirements file
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
