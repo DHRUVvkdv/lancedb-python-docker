@@ -1,27 +1,39 @@
+import json
 import lancedb
+import asyncio
+from fastapi import FastAPI
+from mangum import Mangum
 
-# Connect to the existing LanceDB database
-db = lancedb.connect('/data/my_lancedb')
+app = FastAPI()
 
-# Get the 'users' table
-users_table = db.open_table('users')
+@app.get("/users")
+async def get_users():
+    # Connect to the existing LanceDB database
+    db = lancedb.connect('tmp/my_lancedb')
 
-# Fetch all data from the table
-all_users = users_table.to_pandas()
-print("All users:")
-print(all_users)
+    # Get the 'users' table
+    users_table = db.open_table('users')
 
-# # Perform a simple query (e.g., users older than 30)
-# older_users = users_table.to_pandas(filter="age > 30")
-# print("\nUsers older than 30:")
-# print(older_users)
+    # Fetch all data from the table
+    all_users = users_table.to_pandas()
 
-# # Perform a more complex query (e.g., users from New York or London)
-# city_users = users_table.to_pandas(filter="city = 'New York' OR city = 'London'")
-# print("\nUsers from New York or London:")
-# print(city_users)
+    # Convert DataFrame to list of dictionaries for JSON serialization
+    users_list = all_users.to_dict(orient='records')
 
-# # Search for a specific user by name
-# alice = users_table.to_pandas(filter="name = 'Alice'")
-# print("\nUser named Alice:")
-# print(alice)
+    return {"users": users_list}
+
+# Handler for AWS Lambda
+mangum_handler = Mangum(app)
+
+def lambda_handler(event, context):
+    # Create the database if it doesn't exist
+    import create_db
+
+    # Check if the event is from API Gateway
+    if 'requestContext' in event and 'http' in event['requestContext']:
+        # If it's from API Gateway, use Mangum handler
+        return mangum_handler(event, context)
+    else:
+        # If it's a direct Lambda invocation, handle it ourselves
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(get_users())

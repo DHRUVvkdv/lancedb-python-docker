@@ -1,2 +1,5 @@
 lancedb
 pandas
+fastapi
+mangum
+uvicorn

@@ -1,8 +1,8 @@
 import lancedb
 import pandas as pd
 
-# Create a new LanceDB database in the 'my_lancedb' folder
-db = lancedb.connect('/data/my_lancedb')
+# Create a new LanceDB database in the /tmp folder
+db = lancedb.connect('tmp/my_lancedb')
 
 # Create a table named 'users' with some sample data
 data = {

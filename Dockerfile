@@ -1,10 +1,15 @@
-FROM python:3.9-slim
+# FROM python:3.9-slim
+# FROM python:3.12-slim
+FROM public.ecr.aws/lambda/python:3.12
 
-WORKDIR /app
+# Copy requirements file
+COPY requirements.txt ${LAMBDA_TASK_ROOT}
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install the specified packages
+RUN pip install -r requirements.txt
 
-COPY src/ .
+# Copy function code
+COPY src/ ${LAMBDA_TASK_ROOT}
 
-CMD ["python", "create_db.py", "&&", "python", "query_db.py"]
+# Set the CMD to your handler
+CMD ["query_db.lambda_handler"]
